@@ -15,5 +15,13 @@
         "ESP_ROM_ELF_DIR": "C:\\Espressif\\tools\\esp-rom-elfs\\20230320/",
         "IDF_TARGET": "esp32s3"
     },
-    "idf.flashType": "UART"
+    "idf.flashType": "UART",
+    "files.associations": {
+        "task.h": "c",
+        "wifihandler.h": "c",
+        "string.h": "c",
+        "esp_event.h": "c",
+        "esp_wifi.h": "c",
+        "nvs_flash.h": "c"
+    }
 }
