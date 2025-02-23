@@ -13,6 +13,7 @@
 #include "freertos/task.h"
 
 #include "WifiHandler.h"
+#include "ledHandler.h"
 
 void app_main(void);
 

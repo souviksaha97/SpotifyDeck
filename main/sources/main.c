@@ -2,6 +2,7 @@
 #include <string.h>
 #include "main.h"
 
+
 void init(void)
 {
   // Initialize NVS
@@ -25,6 +26,7 @@ void app_main(void)
   vTaskDelay(pdMS_TO_TICKS(5000));
 
   // Start Ping Task
-  // xTaskCreate(ping_task, "ping_task", 4096, NULL, 5, NULL);
+  xTaskCreate(&ping_task, "ping_task", 4096, NULL, 5, NULL);
   xTaskCreate(&http_get_task, "http_get_task", 8192, NULL, 5, NULL);
+  xTaskCreate(&led_handler, "led_handler", 8192, NULL, 5, NULL);
 }

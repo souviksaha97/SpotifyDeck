@@ -2,6 +2,11 @@
 #include "esp_wifi.h"
 #include "cJSON.h"
 
+#define MAX_HTTP_OUTPUT_BUFFER 2048  // Adjust size as needed
+
+static char *response_buffer = NULL;  // Global or static buffer
+static int response_length = 0;
+
 // Event handler for Wi-Fi events
 static void wifi_event_handler(void *arg, esp_event_base_t event_base,
                                int32_t event_id, void *event_data)
@@ -162,10 +167,7 @@ void ping_task(void *pvParameters)
     }
 }
 
-#define MAX_HTTP_OUTPUT_BUFFER 2048  // Adjust size as needed
 
-static char *response_buffer = NULL;  // Global or static buffer
-static int response_length = 0;
 
 esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 {

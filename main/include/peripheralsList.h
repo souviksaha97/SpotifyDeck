@@ -1,0 +1,7 @@
+#ifndef PERIPHERALS_LIST_H
+#define PERIPHERALS_LIST_H
+
+#define LED_GPIO 48
+
+
+#endif // PERIPHERALS_LIST_H

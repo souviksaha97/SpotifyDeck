@@ -25,6 +25,9 @@
         "nvs_flash.h": "c",
         "text_encoding": "c",
         "thread": "c",
-        "arduinojson.h": "c"
+        "arduinojson.h": "c",
+        "freertos.h": "c",
+        "ledhandler.h": "c",
+        "main.h": "c"
     }
 }

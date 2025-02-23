@@ -16,8 +16,8 @@
 #include "ping/ping_sock.h"
 #include "esp_http_client.h"
 
-#define WIFI_SSID      "testWifi"       // Replace with your Wi-Fi SSID
-#define WIFI_PASS      "12345678"       // Replace with your Wi-Fi Password
+#define WIFI_SSID      "TP-Link_5E72"       // Replace with your Wi-Fi SSID
+#define WIFI_PASS      "19901367"       // Replace with your Wi-Fi Password
 #define MAX_RETRY      5                // Maximum number of retries
 #define PING_TARGET    "8.8.8.8"
 
