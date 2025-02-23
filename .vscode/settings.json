@@ -22,6 +22,8 @@
         "string.h": "c",
         "esp_event.h": "c",
         "esp_wifi.h": "c",
-        "nvs_flash.h": "c"
+        "nvs_flash.h": "c",
+        "text_encoding": "c",
+        "thread": "c"
     }
 }

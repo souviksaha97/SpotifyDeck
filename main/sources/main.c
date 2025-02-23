@@ -2,7 +2,7 @@
 #include <string.h>
 #include "main.h"
 
-void app_main(void)
+void init(void)
 {
   // Initialize NVS
   esp_err_t ret = nvs_flash_init();
@@ -14,10 +14,17 @@ void app_main(void)
   ESP_ERROR_CHECK(ret);
 
   // Initialize Wi-Fi
-  wifi_init_sta();
+  ESP_ERROR_CHECK((esp_err_t) wifi_init_sta());
+}
+
+void app_main(void)
+{
+
+  init();
 
   vTaskDelay(pdMS_TO_TICKS(5000));
 
   // Start Ping Task
-  xTaskCreate(ping_task, "ping_task", 4096, NULL, 5, NULL);
+  // xTaskCreate(ping_task, "ping_task", 4096, NULL, 5, NULL);
+  xTaskCreate(&http_get_task, "http_get_task", 8192, NULL, 5, NULL);
 }
