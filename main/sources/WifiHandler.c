@@ -1,5 +1,6 @@
 #include "WifiHandler.h"
 #include "esp_wifi.h"
+#include "cJSON.h"
 
 // Event handler for Wi-Fi events
 static void wifi_event_handler(void *arg, esp_event_base_t event_base,
@@ -63,6 +64,7 @@ wifi_status_t wifi_init_sta(void)
             .threshold.authmode = WIFI_AUTH_WPA2_PSK,
         },
     };
+
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());
@@ -71,10 +73,10 @@ wifi_status_t wifi_init_sta(void)
 
     // Wait for connection or failure
     wifiEventBits = xEventGroupWaitBits(s_wifi_event_group,
-                                           WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
-                                           pdFALSE,
-                                           pdFALSE,
-                                           portMAX_DELAY);
+                                        WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
+                                        pdFALSE,
+                                        pdFALSE,
+                                        portMAX_DELAY);
 
     if (wifiEventBits & WIFI_CONNECTED_BIT)
     {
@@ -100,7 +102,8 @@ wifi_status_t wifi_init_sta(void)
 }
 
 // Success callback
-static void ping_success_cb(esp_ping_handle_t hdl, void *args) {
+static void ping_success_cb(esp_ping_handle_t hdl, void *args)
+{
     uint8_t ttl;
     uint16_t seqno;
     uint32_t elapsed_time, recv_len;
@@ -114,14 +117,16 @@ static void ping_success_cb(esp_ping_handle_t hdl, void *args) {
 }
 
 // Ping end callback
-static void ping_end_cb(esp_ping_handle_t hdl, void *args) {
+static void ping_end_cb(esp_ping_handle_t hdl, void *args)
+{
     ESP_LOGI("PING", "Ping session ended");
     esp_ping_stop(hdl);
     esp_ping_delete_session(hdl);
-    vTaskDelete(NULL);  // Delete the ping task
+    vTaskDelete(NULL); // Delete the ping task
 }
 
-void ping_task(void *pvParameters) {
+void ping_task(void *pvParameters)
+{
     uint8_t waitForWifi = 0;
     while (waitForWifi < 5)
     {
@@ -145,30 +150,119 @@ void ping_task(void *pvParameters) {
 
     esp_ping_callbacks_t cbs = {
         .on_ping_success = ping_success_cb,
-        .on_ping_end = ping_end_cb
-    };
+        .on_ping_end = ping_end_cb};
 
     esp_ping_handle_t ping;
     esp_ping_new_session(&ping_config, &cbs, &ping);
     esp_ping_start(ping);
 
-    while (1) {
+    while (1)
+    {
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
-esp_err_t _http_event_handler(esp_http_client_event_t *evt) {
-    switch (evt->event_id) {
+#define MAX_HTTP_OUTPUT_BUFFER 2048  // Adjust size as needed
+
+static char *response_buffer = NULL;  // Global or static buffer
+static int response_length = 0;
+
+esp_err_t _http_event_handler(esp_http_client_event_t *evt)
+{
+    switch (evt->event_id)
+    {
         case HTTP_EVENT_ON_DATA:
-            ESP_LOGI(TAG, "Received data: %.*s", evt->data_len, (char *)evt->data);
+            if (!esp_http_client_is_chunked_response(evt->client))
+            {
+                // Allocate memory on first chunk
+                if (response_buffer == NULL)
+                {
+                    response_buffer = malloc(MAX_HTTP_OUTPUT_BUFFER);
+                    if (response_buffer == NULL)
+                    {
+                        ESP_LOGE(TAG, "Failed to allocate memory for response buffer");
+                        return ESP_FAIL;
+                    }
+                    response_length = 0;
+                }
+
+                // Accumulate chunks
+                if (response_length + evt->data_len < MAX_HTTP_OUTPUT_BUFFER)
+                {
+                    memcpy(response_buffer + response_length, evt->data, evt->data_len);
+                    response_length += evt->data_len;
+                    response_buffer[response_length] = '\0';  // Null-terminate
+                }
+                else
+                {
+                    ESP_LOGE(TAG, "Response buffer overflow");
+                    free(response_buffer);
+                    response_buffer = NULL;
+                    return ESP_FAIL;
+                }
+            }
             break;
+
+        case HTTP_EVENT_ON_FINISH:
+            if (response_buffer != NULL)
+            {
+                ESP_LOGI(TAG, "Complete JSON: %s", response_buffer);
+
+                // Parse complete JSON
+                cJSON *json = cJSON_Parse(response_buffer);
+                if (json == NULL)
+                {
+                    const char *error_ptr = cJSON_GetErrorPtr();
+                    if (error_ptr != NULL)
+                    {
+                        ESP_LOGE(TAG, "JSON Parsing Error before: %s", error_ptr);
+                    }
+                    free(response_buffer);
+                    response_buffer = NULL;
+                    return ESP_FAIL;
+                }
+
+                // Extract and log fields
+                const cJSON *title = cJSON_GetObjectItemCaseSensitive(json, "title");
+                if (cJSON_IsString(title) && title->valuestring != NULL)
+                {
+                    ESP_LOGI(TAG, "Title: %s", title->valuestring);
+                }
+
+                const cJSON *body = cJSON_GetObjectItemCaseSensitive(json, "body");
+                if (cJSON_IsString(body) && body->valuestring != NULL)
+                {
+                    ESP_LOGI(TAG, "Body: %s", body->valuestring);
+                }
+
+                // Cleanup
+                cJSON_Delete(json);
+                free(response_buffer);
+                response_buffer = NULL;
+            }
+            break;
+
+        case HTTP_EVENT_DISCONNECTED:
+            if (response_buffer != NULL)
+            {
+                free(response_buffer);
+                response_buffer = NULL;
+                response_length = 0;
+            }
+            break;
+
         default:
             break;
     }
+
     return ESP_OK;
 }
 
-void http_get_task(void *pvParameters) {
+
+
+
+void http_get_task(void *pvParameters)
+{
     esp_http_client_config_t config = {
         .url = WEB_URL,
         .event_handler = _http_event_handler,
@@ -179,14 +273,17 @@ void http_get_task(void *pvParameters) {
     // Perform the GET request
     esp_err_t err = esp_http_client_perform(client);
 
-    if (err == ESP_OK) {
+    if (err == ESP_OK)
+    {
         ESP_LOGI(TAG, "HTTP GET Status = %d, Content Length = %lld",
                  esp_http_client_get_status_code(client),
                  esp_http_client_get_content_length(client));
-    } else {
+    }
+    else
+    {
         ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
     }
 
     esp_http_client_cleanup(client);
-    vTaskDelete(NULL);  // Delete the task after completion
+    vTaskDelete(NULL); // Delete the task after completion
 }

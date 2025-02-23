@@ -24,6 +24,7 @@
         "esp_wifi.h": "c",
         "nvs_flash.h": "c",
         "text_encoding": "c",
-        "thread": "c"
+        "thread": "c",
+        "arduinojson.h": "c"
     }
 }
