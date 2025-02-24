@@ -4,8 +4,7 @@
     "idf.pythonInstallPath": "/usr/bin/python",
     "idf.espAdfPath": "/home/esp/.cargo/esp-adf",
     "idf.openOcdConfigs": [
-        "interface/ftdi/esp32_devkitj_v1.cfg",
-        "target/esp32s3.cfg"
+        "board/esp32s3-builtin.cfg"
     ],
     "idf.port": "/dev/ttyACM0",
     "idf.toolsPath": "/home/fsociety/.espressif",
@@ -28,6 +27,9 @@
         "arduinojson.h": "c",
         "freertos.h": "c",
         "ledhandler.h": "c",
-        "main.h": "c"
+        "main.h": "c",
+        "stdlib.h": "c",
+        "ssd1306.h": "c",
+        "buzzerhandler.h": "c"
     }
 }

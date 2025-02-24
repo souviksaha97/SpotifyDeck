@@ -161,10 +161,7 @@ void ping_task(void *pvParameters)
     esp_ping_new_session(&ping_config, &cbs, &ping);
     esp_ping_start(ping);
 
-    while (1)
-    {
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }
+    vTaskDelete(NULL);
 }
 
 

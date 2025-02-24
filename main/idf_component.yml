@@ -15,3 +15,8 @@ dependencies:
   #   # All dependencies of `main` are public by default.
   #   public: true
   espressif/led_strip: ^3.0.0
+  # espressif/ssd1306: ^1.0.5~1
+  nopnop2002/ssd1306:
+    path: components/ssd1306/
+    git: https://github.com/nopnop2002/esp-idf-ssd1306.git
+  hayschan/buzzer: ^1.0.0
