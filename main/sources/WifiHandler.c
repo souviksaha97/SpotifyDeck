@@ -67,8 +67,15 @@ wifi_status_t wifi_init_sta(void)
             .ssid = WIFI_SSID,
             .password = WIFI_PASS,
             .threshold.authmode = WIFI_AUTH_WPA2_PSK,
+            .pmf_cfg = {
+                .capable = true,
+                .required = false,
+            },
         },
     };
+
+    wifi_scan_method_t scan_method = WIFI_ALL_CHANNEL_SCAN;
+    wifi_sort_method_t sort_method = WIFI_CONNECT_AP_BY_SIGNAL;
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));

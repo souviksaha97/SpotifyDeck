@@ -9,6 +9,16 @@ dependencies:
       registry_url: https://components.espressif.com/
       type: service
     version: 3.0.0
+  espressif/mpu6050:
+    component_hash: d69219ccb141372b863c511749ffbeab28417ac71c205d7ed7030c308e1b6832
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.0'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.2.0
   hayschan/buzzer:
     component_hash: ed8b35d8d2d662379010dd44624e3d0ac88ec9027a99f1091663dda821f3051d
     dependencies:
@@ -23,19 +33,11 @@ dependencies:
     source:
       type: idf
     version: 5.4.0
-  nopnop2002/ssd1306:
-    component_hash: c403c80de84c1ad925b8e69bcc3fb1e1d8bb73fe966a842b0ef817625a09dacd
-    dependencies: []
-    source:
-      git: https://github.com/nopnop2002/esp-idf-ssd1306.git
-      path: components/ssd1306/
-      type: git
-    version: 2840f569225d10f4e28f5eb5a2bb3893f686dd76
 direct_dependencies:
 - espressif/led_strip
+- espressif/mpu6050
 - hayschan/buzzer
 - idf
-- nopnop2002/ssd1306
-manifest_hash: 13354a1a6736316eb1d57c13f639db3cdd80fae3e708285342aa9cd88e7b7b14
+manifest_hash: 4d848699212d2d97b9e6eb4da87270e357e6a8abe6f044d9e7136876cdb65d20
 target: esp32s3
 version: 2.0.0

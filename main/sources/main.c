@@ -3,13 +3,13 @@
 #include "main.h"
 
 
-#include "ssd1306.h"
-#include "font8x8_basic.h"
+// #include "ssd1306.h"
+// #include "font8x8_basic.h"
 
 #define tag "SSD1306"
 
 
-SSD1306_t dev;
+// SSD1306_t dev;
 int center, top, bottom;
 char lineChar[20];
 
@@ -69,7 +69,7 @@ void init(void)
 
   // ESP_LOGI(tag, "SSD1306 Completed");
   // Initialize Wi-Fi
-  ESP_ERROR_CHECK((esp_err_t) wifi_init_sta());
+  // ESP_ERROR_CHECK((esp_err_t) wifi_init_sta());
 }
 
 void app_main(void)
@@ -81,8 +81,9 @@ void app_main(void)
   vTaskDelay(pdMS_TO_TICKS(5000));
 
   // Start Ping Task
-  xTaskCreate(&ping_task, "ping_task", 4096, NULL, 5, NULL);
-  xTaskCreate(&http_get_task, "http_get_task", 8192, NULL, 5, NULL);
-  xTaskCreate(&led_handler, "led_handler", 8192, NULL, 5, NULL);
-  xTaskCreate(&buzzer_task, "buzzer_task", 8192, NULL, 5, NULL);
+  // xTaskCreate(&ping_task, "ping_task", 4096, NULL, 5, NULL);
+  // xTaskCreate(&http_get_task, "http_get_task", 8192, NULL, 5, NULL);
+  // xTaskCreate(&led_handler, "led_handler", 8192, NULL, 5, NULL);
+  // xTaskCreate(&buzzer_task, "buzzer_task", 8192, NULL, 5, NULL);
+  xTaskCreate(&mpu_task, "mpuTaskHandler", 8192, NULL, 5, NULL);
 }

@@ -30,6 +30,12 @@
         "main.h": "c",
         "stdlib.h": "c",
         "ssd1306.h": "c",
-        "buzzerhandler.h": "c"
+        "buzzerhandler.h": "c",
+        "mpuhandler.h": "c",
+        "mpu6050.h": "c",
+        "i2c.h": "c",
+        "esp_log.h": "c",
+        "stdint.h": "c",
+        "stdbool.h": "c"
     }
 }

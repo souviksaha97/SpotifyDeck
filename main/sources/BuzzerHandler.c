@@ -14,7 +14,7 @@ void buzzer_task(void *pvParameters)
     while (1) 
     {   
         ESP_LOGI(TAG, "Playing a note on the buzzer!");
-        buzzer(NOTE_G6, 7168, 1, 1, 5);
+        buzzer(NOTE_C2, 7168, 1, 1, 5);
         vTaskDelay(5000 / portTICK_PERIOD_MS);
     }
 } 

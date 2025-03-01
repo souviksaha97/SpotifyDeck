@@ -15,6 +15,7 @@
 #include "WifiHandler.h"
 #include "ledHandler.h"
 #include "BuzzerHandler.h"
+#include "mpuHandler.h"
 
 void app_main(void);
 
