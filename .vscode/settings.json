@@ -36,6 +36,10 @@
         "i2c.h": "c",
         "esp_log.h": "c",
         "stdint.h": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "peripheralslist.h": "c",
+        "stdio.h": "c",
+        "oledhandler.h": "c",
+        "gpio.h": "c"
     }
 }

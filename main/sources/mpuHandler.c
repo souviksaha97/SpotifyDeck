@@ -8,22 +8,9 @@ mpu6050_temp_value_t temp;
 static void mpu6050_init()
 {
     i2c_master_init();
-    mpu6050 = mpu6050_create(I2C_NUM, MPU6050_I2C_ADDRESS);
+    mpu6050 = mpu6050_create(I2C_MASTER_NUM, MPU6050_I2C_ADDRESS);
     mpu6050_config(mpu6050, ACCE_FS_4G, GYRO_FS_500DPS);
     mpu6050_wake_up(mpu6050);
-}
-
-void i2c_master_init() {
-    i2c_config_t conf = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = I2C_MASTER_SDA_IO,
-        .scl_io_num = I2C_MASTER_SCL_IO,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = 100000,
-    };
-    ESP_ERROR_CHECK(i2c_param_config(I2C_NUM, &conf));
-    ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM, conf.mode, 0, 0, 0));
 }
 
 void mpu_task(void *pvParameters)

@@ -8,6 +8,8 @@
 #include "esp_system.h"
 #include "esp_netif.h"
 
+#include "driver/i2c.h"
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 #include "freertos/task.h"
@@ -16,6 +18,8 @@
 #include "ledHandler.h"
 #include "BuzzerHandler.h"
 #include "mpuHandler.h"
+#include "oledHandler.h"
+#include "peripheralsList.h"
 
 void app_main(void);
 

@@ -19,6 +19,16 @@ dependencies:
       registry_url: https://components.espressif.com/
       type: service
     version: 1.2.0
+  espressif/ssd1306:
+    component_hash: 102cfc05b1b304862fa3f494e9dd955844bcc5f6cb16596e4ca5df3e6bf9fd0d
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.0'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.0.5~1
   hayschan/buzzer:
     component_hash: ed8b35d8d2d662379010dd44624e3d0ac88ec9027a99f1091663dda821f3051d
     dependencies:
@@ -36,8 +46,9 @@ dependencies:
 direct_dependencies:
 - espressif/led_strip
 - espressif/mpu6050
+- espressif/ssd1306
 - hayschan/buzzer
 - idf
-manifest_hash: 4d848699212d2d97b9e6eb4da87270e357e6a8abe6f044d9e7136876cdb65d20
+manifest_hash: 9dfbf211488615c1280513c7bfc296029273a0bce2ed8c61d2e876d60f46a977
 target: esp32s3
 version: 2.0.0
