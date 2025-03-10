@@ -45,6 +45,10 @@
         "system_error": "c",
         "esp_netif.h": "c",
         "rtchandler.h": "c",
-        "sprites.h": "c"
+        "sprites.h": "c",
+        "esp_sleep.h": "c",
+        "esp_idf_version.h": "c",
+        "button_gpio.h": "c",
+        "buttonhandler.h": "c"
     }
 }

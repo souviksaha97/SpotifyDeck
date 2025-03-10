@@ -19,7 +19,7 @@ void init(void)
   
   i2c_master_init();
   queue_init();
-  
+  gpio_init();  
 
   // Initialize Wi-Fi
   // send_to_oled((uint8_t *) "Wi-Fi initialized");
@@ -37,5 +37,6 @@ void app_main(void)
   init();
   xTaskCreate(&mpu_task, "mpu_task", 2048, NULL, 5, NULL);
   xTaskCreate(&oled_task, "oled_task", 8192, NULL, 5, NULL);
+  xTaskCreate(&button_task, "button_task", 1024, NULL, 5, NULL);
   // send_to_oled((uint8_t *) "Tasks started");
 }

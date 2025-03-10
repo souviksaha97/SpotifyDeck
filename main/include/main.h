@@ -24,6 +24,7 @@
 #include "oledHandler.h"
 #include "peripheralsList.h"
 #include "rtcHandler.h"
+#include "buttonHandler.h"
 
 
 

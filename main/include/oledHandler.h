@@ -19,7 +19,7 @@
 #define FRAME_TIME_MS (1000 / FPS)
 
 #define MAX_ASTERIODS 5
-
+#define MAX_BULLETS 100
 
 void oled_task(void *pvParameters);
 void send_to_oled(const uint8_t *msg);

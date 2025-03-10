@@ -10,12 +10,20 @@ typedef struct
 
 uint32_t random_asteroid = 0;
 
+bool collision = false;
+
+uint8_t score = 0;
+
+uint8_t lives = 3;
+
 static ssd1306_handle_t ssd1306_dev = NULL;
 QueueHandle_t oledQueue;
 SemaphoreHandle_t oledMutex;
-position_t spaceship_pos;
 
+position_t spaceship_pos;
 position_t asteroid_pos[MAX_ASTERIODS];
+position_t explosion_pos;
+position_t bullet_pos[MAX_BULLETS];
 
 static void oled_init()
 {
@@ -30,6 +38,104 @@ static void oled_init()
     {
         asteroid_pos[i].x = UINT8_MAX;
         asteroid_pos[i].y = UINT8_MAX;
+    }
+
+    for (int i = 0; i < MAX_BULLETS; i++)
+    {
+        bullet_pos[i].x = UINT8_MAX;
+        bullet_pos[i].y = UINT8_MAX;
+    }
+}
+
+void render_bullets()
+{
+    for (int i = 0; i < MAX_BULLETS; i++)
+    {
+        if (bullet_pos[i].x != UINT8_MAX)
+        {
+            bullet_pos[i].y -= 5;
+            if (bullet_pos[i].y < 0 || bullet_pos[i].y > SSD1306_HEIGHT)
+            {
+                bullet_pos[i].x = UINT8_MAX;
+                bullet_pos[i].y = UINT8_MAX;
+            }
+        }
+    }
+}
+
+
+
+void render_score(void)
+{
+    char score_str[5];
+    snprintf(score_str, sizeof(score_str), "%d", score);
+    ssd1306_draw_string(ssd1306_dev, 0, 0, (uint8_t *) &score_str, 12, 1);
+}
+
+void render_explosion()
+{
+   explosion_pos.x = spaceship_pos.x;
+   explosion_pos.y = spaceship_pos.y;
+}
+
+void check_collision(void)
+{
+    for (int i = 0; i < MAX_ASTERIODS; i++)
+    {
+        if (asteroid_pos[i].x != UINT8_MAX)
+        {
+            if (spaceship_pos.x < asteroid_pos[i].x + asteroid_width &&
+                spaceship_pos.x + spaceship_width > asteroid_pos[i].x &&
+                spaceship_pos.y < asteroid_pos[i].y + asteroid_height &&
+                spaceship_pos.y + spaceship_height > asteroid_pos[i].y)
+            {
+                ESP_LOGI("OLED", "Collision detected");
+                collision = true;
+                lives--;
+                if (lives == 0)
+                {
+                    score = 0;
+                    lives = 3;
+
+                    //Game over screen
+                }
+
+                render_explosion();
+                asteroid_pos[i].x = UINT8_MAX;
+                asteroid_pos[i].y = UINT8_MAX;
+            }
+        }
+    }
+
+    for (int i = 0; i < MAX_BULLETS; i++)
+    {
+        if (bullet_pos[i].x != UINT8_MAX)
+        {
+            for (int j = 0; j < MAX_ASTERIODS; j++)
+            {
+                if (asteroid_pos[j].x != UINT8_MAX)
+                {
+                    if (bullet_pos[i].x < asteroid_pos[j].x + asteroid_width + 2 &&
+                        bullet_pos[i].x + bullet_width + 2 > asteroid_pos[j].x &&
+                        bullet_pos[i].y < asteroid_pos[j].y + asteroid_height + 2 &&
+                        bullet_pos[i].y + bullet_height + 2 > asteroid_pos[j].y)
+                    {
+                        score++;
+                        bullet_pos[i].x = UINT8_MAX;
+                        bullet_pos[i].y = UINT8_MAX;
+                        asteroid_pos[j].x = UINT8_MAX;
+                        asteroid_pos[j].y = UINT8_MAX;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void render_heart(void){
+    for (int i = 0; i < lives; i++)
+    {
+        ssd1306_draw_bitmap(ssd1306_dev, SSD1306_WIDTH - (i + 1) * heart_width - (i * 3), 0, heart, heart_width, heart_height);
     }
 }
 
@@ -74,7 +180,23 @@ void render_asteroids()
             if (random_asteroid == 0)
             {
                 // ESP_LOGI("OLED", "Asteroid spawned");
-                asteroid_pos[i].x = esp_random() % (SSD1306_WIDTH - asteroid_width);
+                asteroid_pos[i].x = (spaceship_width/2) + esp_random() % (SSD1306_WIDTH - spaceship_width);
+                bool same_position = true;
+                while (same_position)
+                {
+                    same_position = false;
+                    for (int j = 0; j < MAX_ASTERIODS; j++)
+                    {
+                        if (i != j && abs(asteroid_pos[j].x-asteroid_pos[i].x) < asteroid_width)
+                        {
+                            same_position = true;
+                            asteroid_pos[i].x = esp_random() % (SSD1306_WIDTH - asteroid_width);
+                            break;
+                        }
+                    }
+                    // ESP_LOGI("OLED", "Reset asteroid");
+                }
+
                 asteroid_pos[i].y = asteroid_height;
             }
         }
@@ -105,6 +227,21 @@ void refresh_screen()
         }
     }
 
+    for (int i = 0; i < MAX_BULLETS; i++)
+    {
+        if (bullet_pos[i].x != UINT8_MAX)
+        {
+            ssd1306_fill_point(ssd1306_dev, bullet_pos[i].x, bullet_pos[i].y, 1);
+        }
+    }
+
+    if (collision)
+    {
+        ssd1306_draw_bitmap(ssd1306_dev, explosion_pos.x, explosion_pos.y, explosion, explosion_width, explosion_height);
+    }
+    render_score();
+    render_heart();
+
     ssd1306_refresh_gram(ssd1306_dev);
 }
 
@@ -128,7 +265,34 @@ void oled_task(void *pvParameters)
             render_spaceship(direction);
             // ESP_LOGI("OLED", "Direction: %c | Position: %d", direction, spaceship_pos.x);
         }
+
+        if (xQueueReceive(buttonQueue, &direction, 0) == pdTRUE)
+        {
+            ESP_LOGI("OLED", "Button pressed");
+            for (int i = 0; i < MAX_BULLETS; i++)
+            {
+                if (bullet_pos[i].x == UINT8_MAX)
+                {
+                    bullet_pos[i].x = spaceship_pos.x + spaceship_width / 2 - bullet_width / 2;
+                    bullet_pos[i].y = spaceship_pos.y;
+                    break;
+                }
+            }
+        }
+        render_bullets();
+        check_collision();
+        if (collision)
+        {
+            render_explosion();
+        }
         refresh_screen();
+        if (collision)
+        {
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            collision = false;
+            spaceship_pos.x = SSD1306_WIDTH / 2 - spaceship_width / 2;
+            spaceship_pos.y = SSD1306_HEIGHT - spaceship_height;
+        }
         vTaskDelay(pdMS_TO_TICKS(FRAME_TIME_MS));
         // Wait for data from the queue
     }
