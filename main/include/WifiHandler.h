@@ -15,6 +15,8 @@
 #include "lwip/sys.h"
 #include "ping/ping_sock.h"
 #include "esp_http_client.h"
+#include "oledHandler.h"
+#include "main.h"
 
 #define WIFI_SSID      "testWifi"       // Replace with your Wi-Fi SSID
 #define WIFI_PASS      "12345678"       // Replace with your Wi-Fi Password

@@ -13,3 +13,8 @@ void i2c_master_init() {
     ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_1, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_1, conf.mode, 0, 0, 0));
   }
+
+  void queue_init() {
+    oledQueue = xQueueCreate(1, sizeof(char));
+    oledMutex = xSemaphoreCreateMutex();
+  }

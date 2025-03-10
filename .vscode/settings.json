@@ -4,7 +4,8 @@
     "idf.pythonInstallPath": "/usr/bin/python",
     "idf.espAdfPath": "/home/esp/.cargo/esp-adf",
     "idf.openOcdConfigs": [
-        "board/esp32s3-builtin.cfg"
+        "interface/ftdi/esp32_devkitj_v1.cfg",
+        "target/esp32s3.cfg"
     ],
     "idf.port": "/dev/ttyACM0",
     "idf.toolsPath": "/home/fsociety/.espressif",
@@ -40,6 +41,10 @@
         "peripheralslist.h": "c",
         "stdio.h": "c",
         "oledhandler.h": "c",
-        "gpio.h": "c"
+        "gpio.h": "c",
+        "system_error": "c",
+        "esp_netif.h": "c",
+        "rtchandler.h": "c",
+        "sprites.h": "c"
     }
 }

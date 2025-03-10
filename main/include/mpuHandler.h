@@ -8,8 +8,10 @@
 #include "mpu6050.h"
 #include "peripheralsList.h"
 #include "esp_log.h"
+#include "main.h"
+#include "oledHandler.h"
 
-#define TAG "MPU6050"
+#define MPU_QUEUE_SIZE 10
 
 void mpu_task(void *pvParameters);
 

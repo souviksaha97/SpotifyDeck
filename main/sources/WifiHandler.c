@@ -89,14 +89,20 @@ wifi_status_t wifi_init_sta(void)
                                         pdFALSE,
                                         pdFALSE,
                                         portMAX_DELAY);
-
+    
+    uint8_t oledMessage[50];
     if (wifiEventBits & WIFI_CONNECTED_BIT)
     {
         ESP_LOGI(TAG, "Connected to SSID: %s", WIFI_SSID);
+        
+        snprintf((char *)oledMessage, sizeof(oledMessage), "Connected to %s", WIFI_SSID);
+        send_to_oled(oledMessage);
     }
     else if (wifiEventBits & WIFI_FAIL_BIT)
     {
         ESP_LOGI(TAG, "Failed to connect to SSID: %s", WIFI_SSID);
+        snprintf((char *)oledMessage, sizeof(oledMessage), "Failed to connect");
+        send_to_oled(oledMessage);
         return WIFI_FAIL;
     }
     else
@@ -126,6 +132,9 @@ static void ping_success_cb(esp_ping_handle_t hdl, void *args)
     esp_ping_get_profile(hdl, ESP_PING_PROF_SIZE, &recv_len, sizeof(recv_len));
 
     ESP_LOGI("PING", "Ping success: seqno=%u time=%lums ttl=%u size=%lu", seqno, elapsed_time, ttl, recv_len);
+    char pingMessage[50];
+    snprintf((char *)pingMessage, sizeof(pingMessage), "Ping success: %lums", elapsed_time);
+    send_to_oled((uint8_t *)pingMessage);
 }
 
 // Ping end callback

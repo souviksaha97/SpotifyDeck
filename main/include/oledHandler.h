@@ -9,9 +9,19 @@
 #include "ssd1306.h"
 #include "peripheralsList.h"
 #include "esp_log.h"
+#include "sprites.h"
+#include "main.h"
+#include "esp_random.h"
 
-#define TAG "OLED"
+#define MAX_MESSAGE_LENGTH 64
+
+#define FPS 20
+#define FRAME_TIME_MS (1000 / FPS)
+
+#define MAX_ASTERIODS 5
+
 
 void oled_task(void *pvParameters);
+void send_to_oled(const uint8_t *msg);
 
 #endif // OLED_HANDLER_H
