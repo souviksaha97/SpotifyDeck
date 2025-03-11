@@ -2,12 +2,13 @@
 
 QueueHandle_t buzzerQueue;
 
-const piano_note_t tune[] = {
-    NOTE_E4, NOTE_G4, NOTE_A4, NOTE_A4, NOTE_E4, NOTE_G4, NOTE_B4, NOTE_A4,
-    NOTE_A4, NOTE_E4, NOTE_G4, NOTE_A4, NOTE_A4, NOTE_G4, NOTE_E4, NOTE_E4,
-    NOTE_F4, NOTE_A4, NOTE_C5, NOTE_B4, NOTE_B4, NOTE_F4, NOTE_A4, NOTE_G4, NOTE_F4,
-    // Repeat or add more for a longer loop
+const float note_durations[] = {
+    0.3, 0.3, 0.6, 0.6, 0.3, 0.3, 0.3, 0.6, 0.6, 0.3, // First phrase
+    0.3, 0.3, 0.6, 0.6, 0.3, 0.3, 0.3, 0.3            // Repeat phrase
 };
+
+const piano_note_t tune[] = {
+    NOTE_G3, NOTE_G3, NOTE_C4, NOTE_G4, NOTE_F4, NOTE_E4, NOTE_D4, NOTE_C5, NOTE_G4, NOTE_F4, NOTE_E4, NOTE_D4, NOTE_C5, NOTE_G4, NOTE_F4, NOTE_E4, NOTE_F4, NOTE_D4};
 
 Note bullet_fire = {
     .pitch = NOTE_G5,
@@ -48,11 +49,6 @@ Note game_over = {
     .loud_cycle_time = 2  // Play twice for emphasis
 };
 
-const float note_durations[] = {
-    0.2, 0.2, 0.4, 0.1, 0.2, 0.2, 0.4, 0.4,
-    0.1, 0.2, 0.2, 0.4, 0.1, 0.2, 0.2, 0.1,
-    0.2, 0.2, 0.4, 0.4, 0.1, 0.2, 0.2, 0.2, 0.2};
-
 static void configure_buzzer(void)
 {
     buzzer_init(BUZZER_GPIO);
@@ -76,10 +72,11 @@ void buzzer_task(void *pvParameters)
                 if (xQueueReceive(buzzerQueue, &note, 0) == pdTRUE)
                 {
                     buzzer(note.pitch, note.loudness, note.loud_time, note.no_loud_time, note.loud_cycle_time);
+                    vTaskDelay(50 / portTICK_PERIOD_MS); // Delay between loops
                 }
                 else
-                {
-                    // buzzer(tune[i], loudness, note_durations[i], no_loud_time, loud_cycle_time);
+                {   
+                    buzzer(tune[i], loudness, note_durations[i], no_loud_time, loud_cycle_time);
                 }
             }
             vTaskDelay(100 / portTICK_PERIOD_MS); // Delay between loops

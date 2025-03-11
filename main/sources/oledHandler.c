@@ -21,9 +21,13 @@ QueueHandle_t oledQueue;
 SemaphoreHandle_t oledMutex;
 
 position_t spaceship_pos;
-position_t asteroid_pos[MAX_ASTERIODS];
+position_t asteroid_pos[MAX_ASTEROIDS];
 position_t explosion_pos;
 position_t bullet_pos[MAX_BULLETS];
+
+TickType_t collision_time = 0;
+
+char debug[100]; // Reduced buffer size, it's usually enough for the format
 
 static void oled_init()
 {
@@ -34,7 +38,7 @@ static void oled_init()
     spaceship_pos.x = SSD1306_WIDTH / 2 - spaceship_width / 2;
     spaceship_pos.y = SSD1306_HEIGHT - spaceship_height;
 
-    for (int i = 0; i < MAX_ASTERIODS; i++)
+    for (int i = 0; i < MAX_ASTEROIDS; i++)
     {
         asteroid_pos[i].x = UINT8_MAX;
         asteroid_pos[i].y = UINT8_MAX;
@@ -45,11 +49,49 @@ static void oled_init()
         bullet_pos[i].x = UINT8_MAX;
         bullet_pos[i].y = UINT8_MAX;
     }
+
+    collision_time = xTaskGetTickCount();
+}
+
+int get_asteroid_buffer(int game_level) {
+    // Increase buffer as the level increases (linear growth)
+    int buffer = BASE_BUFFER + (game_level * BUFFER_INCREMENT);
+    if (buffer > 5)
+    {
+        buffer = 5;
+    }
+    return buffer;
+}
+
+int get_game_level(int score) {
+    // Clamp score between 0 and 20
+    if (score < 0) score = 0;
+    if (score > 20) score = 20;
+
+    // Use an exponential formula to calculate the level
+    // The level will increase more quickly as the score approaches 20
+    return 1 + (int)(pow(score / 20.0, 2) * 9); // Exponential scaling
+}
+
+bool will_spawn_asteroid(int game_level) {
+    // We can base the probability on the game level.
+    // Higher game levels have a higher chance of spawning an asteroid.
+    
+    // Normalize game level to range from 0 to 1 (with max level of 10)
+    float normalized_level = game_level / 10.0;
+
+    // We use the normalized game level to scale the chance of an asteroid appearing
+    // Exponentially increasing chance with higher levels
+    float spawn_chance = pow(normalized_level, 2);  // Exponential scaling
+    
+    // Generate a random number and compare it with the spawn chance
+    // If the random number is less than spawn_chance, an asteroid will spawn
+    return (esp_random() % 100) < (spawn_chance * 100);
 }
 
 void reset_asteroid_bullets(void)
 {
-    for (int i = 0; i < MAX_ASTERIODS; i++)
+    for (int i = 0; i < MAX_ASTEROIDS; i++)
     {
         asteroid_pos[i].x = UINT8_MAX;
         asteroid_pos[i].y = UINT8_MAX;
@@ -100,14 +142,14 @@ void render_score()
 
 void render_explosion()
 {
-    explosion_pos.x = spaceship_pos.x;
-    explosion_pos.y = spaceship_pos.y;
+    explosion_pos.x = spaceship_pos.x - explosion_width / 2 + spaceship_width / 2;
+    explosion_pos.y = spaceship_pos.y - explosion_height / 2 + spaceship_height / 2;
     xQueueSend(buzzerQueue, &explosion_sound, 0);
 }
 
 void check_collision(void)
 {
-    for (int i = 0; i < MAX_ASTERIODS; i++)
+    for (int i = 0; i < MAX_ASTEROIDS; i++)
     {
         if (asteroid_pos[i].x != UINT8_MAX)
         {
@@ -116,9 +158,10 @@ void check_collision(void)
                 spaceship_pos.y < asteroid_pos[i].y + asteroid_height &&
                 spaceship_pos.y + spaceship_height > asteroid_pos[i].y)
             {
-                ESP_LOGI("OLED", "Collision detected");
+                // ESP_LOGI("OLED", "Collision detected");
                 collision = true;
                 lives--;
+                collision_time = xTaskGetTickCount();
                 if (lives == 0)
                 {
                     score = 0;
@@ -132,19 +175,34 @@ void check_collision(void)
             }
         }
     }
+    if (!collision)
+    {
+        sprintf(debug, "%ld", xTaskGetTickCount() - collision_time);
+        ESP_LOGI("OLED", "%s", debug);
+        sprintf(debug, "%ld", pdMS_TO_TICKS(600000) / get_game_level(score));
+        ESP_LOGI("OLED", "%s", debug);
+        sprintf(debug, "%d", get_game_level(score));
+        ESP_LOGI("OLED", "%s", debug);
+        if (xTaskGetTickCount() - collision_time > pdMS_TO_TICKS(600000) / get_game_level(score))
+        {
+            score++;
+            collision_time = xTaskGetTickCount();
+        }
+        
+    }
 
     for (int i = 0; i < MAX_BULLETS; i++)
     {
         if (bullet_pos[i].x != UINT8_MAX)
         {
-            for (int j = 0; j < MAX_ASTERIODS; j++)
+            for (int j = 0; j < MAX_ASTEROIDS; j++)
             {
                 if (asteroid_pos[j].x != UINT8_MAX)
                 {
-                    if (bullet_pos[i].x < asteroid_pos[j].x + asteroid_width + 2 &&
-                        bullet_pos[i].x + bullet_width + 2 > asteroid_pos[j].x &&
-                        bullet_pos[i].y < asteroid_pos[j].y + asteroid_height + 2 &&
-                        bullet_pos[i].y + bullet_height + 2 > asteroid_pos[j].y)
+                    if (bullet_pos[i].x < asteroid_pos[j].x + asteroid_width + get_asteroid_buffer(get_game_level(score)) &&
+                        bullet_pos[i].x + bullet_width + get_asteroid_buffer(get_game_level(score)) > asteroid_pos[j].x &&
+                        bullet_pos[i].y < asteroid_pos[j].y + asteroid_height + get_asteroid_buffer(get_game_level(score)) &&
+                        bullet_pos[i].y + bullet_height + get_asteroid_buffer(get_game_level(score)) > asteroid_pos[j].y)
                     {
                         score++;
                         bullet_pos[i].x = UINT8_MAX;
@@ -172,40 +230,43 @@ void render_spaceship(char direction)
     // ssd1306_clear_screen(ssd1306_dev, 0x00);
     if (direction == 'R')
     {
-        spaceship_pos.x += 3;
+        spaceship_pos.x += get_game_level(score)/2 + 3;
     }
     else if (direction == 'L')
     {
-        spaceship_pos.x -= 3;
+        spaceship_pos.x -= get_game_level(score)/2 + 3;
+        if (spaceship_pos.x > SSD1306_WIDTH - spaceship_width)
+        {
+            spaceship_pos.x = 0;
+        }
     }
     else
     {
         spaceship_pos.x = spaceship_pos.x;
     }
 
-    if (spaceship_pos.x < spaceship_width / 2)
+    if (spaceship_pos.x < 0)
     {
-        spaceship_pos.x = spaceship_width / 2;
+        spaceship_pos.x = 0;
     }
     else if (spaceship_pos.x > SSD1306_WIDTH - spaceship_width)
     {
         spaceship_pos.x = SSD1306_WIDTH - spaceship_width;
     }
-
+    // sprintf(debug, "Spaceship position: %d", spaceship_pos.x);
+    ESP_LOGI("OLED", "%s", debug);
     // ssd1306_draw_bitmap(ssd1306_dev, spaceship_pos.x, spaceship_pos.y, spaceship, spaceship_width, spaceship_height);
 }
 
 void render_asteroids()
 {
     // ssd1306_clear_screen(ssd1306_dev, 0x00);
-    char debug[100]; // Reduced buffer size, it's usually enough for the format
-    for (int i = 0; i < MAX_ASTERIODS; i++)
+    for (int i = 0; i < MAX_ASTEROIDS; i++)
     {
         // first check if there is an asteroid on the screen, if not run a random number and if the number is 0, then spawn an asteroid. if there are asteroids on the screen, then increment the y position of the asteroid. if they reach the bottom then reset the value to uint8_tMAX
         if (asteroid_pos[i].x == UINT8_MAX)
         {
-            random_asteroid = esp_random() % 80;
-            if (random_asteroid == 0)
+            if (will_spawn_asteroid(get_game_level(score)))
             {
                 // ESP_LOGI("OLED", "Asteroid spawned");
                 asteroid_pos[i].x = (spaceship_width / 2) + esp_random() % (SSD1306_WIDTH - spaceship_width);
@@ -213,7 +274,7 @@ void render_asteroids()
                 while (same_position)
                 {
                     same_position = false;
-                    for (int j = 0; j < MAX_ASTERIODS; j++)
+                    for (int j = 0; j < MAX_ASTEROIDS; j++)
                     {
                         if (i != j && abs(asteroid_pos[j].x - asteroid_pos[i].x) < asteroid_width)
                         {
@@ -230,7 +291,7 @@ void render_asteroids()
         }
         else
         {
-            asteroid_pos[i].y += 1;
+            asteroid_pos[i].y += get_game_level(score)/2 + 1;
             if (asteroid_pos[i].y > SSD1306_HEIGHT)
             {
                 asteroid_pos[i].x = UINT8_MAX;
@@ -244,7 +305,7 @@ void refresh_screen()
 {
     ssd1306_clear_screen(ssd1306_dev, 0x00);
     ssd1306_draw_bitmap(ssd1306_dev, spaceship_pos.x, spaceship_pos.y, spaceship, spaceship_width, spaceship_height);
-    for (int i = 0; i < MAX_ASTERIODS; i++)
+    for (int i = 0; i < MAX_ASTEROIDS; i++)
     {
         if (asteroid_pos[i].x != UINT8_MAX)
         {
@@ -296,7 +357,7 @@ void oled_task(void *pvParameters)
 
         if (xQueueReceive(buttonQueue, &direction, 0) == pdTRUE)
         {
-            ESP_LOGI("OLED", "Button pressed");
+            // ESP_LOGI("OLED", "Button pressed");
             for (int i = 0; i < MAX_BULLETS; i++)
             {
                 if (bullet_pos[i].x == UINT8_MAX)

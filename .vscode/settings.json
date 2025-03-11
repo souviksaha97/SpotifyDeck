@@ -51,6 +51,10 @@
         "button_gpio.h": "c",
         "buttonhandler.h": "c",
         "esp_random.h": "c",
-        "event_groups.h": "c"
+        "event_groups.h": "c",
+        "*.tcc": "c",
+        "cmath": "c",
+        "condition_variable": "c",
+        "math.h": "c"
     }
 }
