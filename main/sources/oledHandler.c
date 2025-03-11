@@ -47,12 +47,8 @@ static void oled_init()
     }
 }
 
-void render_game_over(void)
+void reset_asteroid_bullets(void)
 {
-    ssd1306_clear_screen(ssd1306_dev, 0x00);
-    ssd1306_draw_string(ssd1306_dev, SSD1306_WIDTH, SSD1306_HEIGHT - 5, (uint8_t *)"Game Over", 16, 1);
-    ssd1306_refresh_gram(ssd1306_dev);
-
     for (int i = 0; i < MAX_ASTERIODS; i++)
     {
         asteroid_pos[i].x = UINT8_MAX;
@@ -64,6 +60,15 @@ void render_game_over(void)
         bullet_pos[i].x = UINT8_MAX;
         bullet_pos[i].y = UINT8_MAX;
     }
+}
+
+void render_game_over(void)
+{
+    ssd1306_clear_screen(ssd1306_dev, 0x00);
+    ssd1306_draw_string(ssd1306_dev, SSD1306_WIDTH, SSD1306_HEIGHT - 5, (uint8_t *)"Game Over", 16, 1);
+    ssd1306_refresh_gram(ssd1306_dev);
+
+    reset_asteroid_bullets();
 
     collision = false;
 
@@ -124,8 +129,7 @@ void check_collision(void)
                     vTaskDelay(pdMS_TO_TICKS(5000));
                 }
 
-                asteroid_pos[i].x = UINT8_MAX;
-                asteroid_pos[i].y = UINT8_MAX;
+                reset_asteroid_bullets();
             }
         }
     }
