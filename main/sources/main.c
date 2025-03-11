@@ -38,5 +38,6 @@ void app_main(void)
   xTaskCreate(&mpu_task, "mpu_task", 2048, NULL, 5, NULL);
   xTaskCreate(&oled_task, "oled_task", 8192, NULL, 5, NULL);
   xTaskCreate(&button_task, "button_task", 1024, NULL, 5, NULL);
+  xTaskCreate(&buzzer_task, "buzzer_task", 2048, NULL, 5, NULL);
   // send_to_oled((uint8_t *) "Tasks started");
 }

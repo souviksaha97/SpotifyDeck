@@ -47,6 +47,29 @@ static void oled_init()
     }
 }
 
+void render_game_over(void)
+{
+    ssd1306_clear_screen(ssd1306_dev, 0x00);
+    ssd1306_draw_string(ssd1306_dev, SSD1306_WIDTH, SSD1306_HEIGHT - 5, (uint8_t *)"Game Over", 16, 1);
+    ssd1306_refresh_gram(ssd1306_dev);
+
+    for (int i = 0; i < MAX_ASTERIODS; i++)
+    {
+        asteroid_pos[i].x = UINT8_MAX;
+        asteroid_pos[i].y = UINT8_MAX;
+    }
+
+    for (int i = 0; i < MAX_BULLETS; i++)
+    {
+        bullet_pos[i].x = UINT8_MAX;
+        bullet_pos[i].y = UINT8_MAX;
+    }
+
+    collision = false;
+
+    xQueueSend(buzzerQueue, &game_over, 0);
+}
+
 void render_bullets()
 {
     for (int i = 0; i < MAX_BULLETS; i++)
@@ -63,19 +86,18 @@ void render_bullets()
     }
 }
 
-
-
-void render_score(void)
+void render_score()
 {
     char score_str[5];
     snprintf(score_str, sizeof(score_str), "%d", score);
-    ssd1306_draw_string(ssd1306_dev, 0, 0, (uint8_t *) &score_str, 12, 1);
+    ssd1306_draw_string(ssd1306_dev, 0, 0, (uint8_t *)&score_str, 12, 1);
 }
 
 void render_explosion()
 {
-   explosion_pos.x = spaceship_pos.x;
-   explosion_pos.y = spaceship_pos.y;
+    explosion_pos.x = spaceship_pos.x;
+    explosion_pos.y = spaceship_pos.y;
+    xQueueSend(buzzerQueue, &explosion_sound, 0);
 }
 
 void check_collision(void)
@@ -97,10 +119,11 @@ void check_collision(void)
                     score = 0;
                     lives = 3;
 
-                    //Game over screen
+                                        // Game over screen
+                    render_game_over();
+                    vTaskDelay(pdMS_TO_TICKS(5000));
                 }
 
-                render_explosion();
                 asteroid_pos[i].x = UINT8_MAX;
                 asteroid_pos[i].y = UINT8_MAX;
             }
@@ -125,6 +148,7 @@ void check_collision(void)
                         bullet_pos[i].y = UINT8_MAX;
                         asteroid_pos[j].x = UINT8_MAX;
                         asteroid_pos[j].y = UINT8_MAX;
+                        xQueueSend(buzzerQueue, &score_point, 0);
                     }
                 }
             }
@@ -132,7 +156,8 @@ void check_collision(void)
     }
 }
 
-void render_heart(void){
+void render_heart(void)
+{
     for (int i = 0; i < lives; i++)
     {
         ssd1306_draw_bitmap(ssd1306_dev, SSD1306_WIDTH - (i + 1) * heart_width - (i * 3), 0, heart, heart_width, heart_height);
@@ -180,14 +205,14 @@ void render_asteroids()
             if (random_asteroid == 0)
             {
                 // ESP_LOGI("OLED", "Asteroid spawned");
-                asteroid_pos[i].x = (spaceship_width/2) + esp_random() % (SSD1306_WIDTH - spaceship_width);
+                asteroid_pos[i].x = (spaceship_width / 2) + esp_random() % (SSD1306_WIDTH - spaceship_width);
                 bool same_position = true;
                 while (same_position)
                 {
                     same_position = false;
                     for (int j = 0; j < MAX_ASTERIODS; j++)
                     {
-                        if (i != j && abs(asteroid_pos[j].x-asteroid_pos[i].x) < asteroid_width)
+                        if (i != j && abs(asteroid_pos[j].x - asteroid_pos[i].x) < asteroid_width)
                         {
                             same_position = true;
                             asteroid_pos[i].x = esp_random() % (SSD1306_WIDTH - asteroid_width);
@@ -209,9 +234,6 @@ void render_asteroids()
                 asteroid_pos[i].y = UINT8_MAX;
             }
         }
-        // ssd1306_draw_bitmap(ssd1306_dev, asteroid_pos[i].x, asteroid_pos[i].y, asteroid, asteroid_width, asteroid_height);
-        // snprintf(debug, sizeof(debug), "Asteroid %d: x: %d y: %d", i, asteroid_pos[i].x, asteroid_pos[i].y);
-        // ESP_LOGI("OLED", "%s", debug);
     }
 }
 
@@ -249,12 +271,15 @@ void oled_task(void *pvParameters)
 {
 
     oled_init();
-    ESP_LOGI("OLED", "OLED task started");
+    // ESP_LOGI("OLED", "OLED task started");
 
     // ssd1306_draw_bitmap(ssd1306_dev, spaceship_pos.x, spaceship_pos.y, spaceship, spaceship_width, spaceship_height);
     // ssd1306_refresh_gram(ssd1306_dev);
     render_spaceship('N');
-   
+    xQueueSend(buzzerQueue, &game_start, 0);
+
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
     char direction;
 
     while (1)
@@ -278,6 +303,8 @@ void oled_task(void *pvParameters)
                     break;
                 }
             }
+
+            xQueueSend(buzzerQueue, &bullet_fire, 0);
         }
         render_bullets();
         check_collision();

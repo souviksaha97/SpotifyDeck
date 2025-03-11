@@ -49,6 +49,7 @@
         "esp_sleep.h": "c",
         "esp_idf_version.h": "c",
         "button_gpio.h": "c",
-        "buttonhandler.h": "c"
+        "buttonhandler.h": "c",
+        "esp_random.h": "c"
     }
 }

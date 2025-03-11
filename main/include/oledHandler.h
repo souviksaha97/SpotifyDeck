@@ -12,6 +12,7 @@
 #include "sprites.h"
 #include "main.h"
 #include "esp_random.h"
+#include "BuzzerHandler.h"
 
 #define MAX_MESSAGE_LENGTH 64
 

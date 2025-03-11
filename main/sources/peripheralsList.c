@@ -21,6 +21,8 @@ void queue_init()
     oledMutex = xSemaphoreCreateMutex();
 
     buttonQueue = xQueueCreate(1, sizeof(int));
+
+    buzzerQueue = xQueueCreate(5, sizeof(Note));
 }
 
 void gpio_init()
