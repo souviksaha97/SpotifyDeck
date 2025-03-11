@@ -26,7 +26,5 @@
 #include "rtcHandler.h"
 #include "buttonHandler.h"
 
-
-
 void app_main(void);
 #endif // MAIN_H

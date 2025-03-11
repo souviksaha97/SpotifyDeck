@@ -2,9 +2,6 @@
 #include <string.h>
 #include "main.h"
 
-
-
-
 void init(void)
 {
   // Initialize NVS
@@ -16,20 +13,14 @@ void init(void)
   }
   ESP_ERROR_CHECK(ret);
 
-  
   i2c_master_init();
   queue_init();
-  gpio_init();  
+  gpio_init();
 
   // Initialize Wi-Fi
   // send_to_oled((uint8_t *) "Wi-Fi initialized");
   // send_to_oled((uint8_t *) "Connected to AP");
 }
-
-
-
-
-
 
 void app_main(void)
 {

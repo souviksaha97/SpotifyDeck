@@ -16,18 +16,16 @@
 #include "mpu6050.h"
 #include "BuzzerHandler.h"
 
-
 #define LED_GPIO 48
 
 #define BUTTON_GPIO 4
 
 #define BUZZER_GPIO 5
 
-#define I2C_MASTER_SCL_IO 16        /*!< gpio number for I2C master clock */
-#define I2C_MASTER_SDA_IO 17        /*!< gpio number for I2C master data  */
-#define I2C_MASTER_NUM I2C_NUM_1    /*!< I2C port number for master dev */
-#define I2C_MASTER_FREQ_HZ 100000   /*!< I2C master clock frequency */
-
+#define I2C_MASTER_SCL_IO 16      /*!< gpio number for I2C master clock */
+#define I2C_MASTER_SDA_IO 17      /*!< gpio number for I2C master data  */
+#define I2C_MASTER_NUM I2C_NUM_1  /*!< I2C port number for master dev */
+#define I2C_MASTER_FREQ_HZ 100000 /*!< I2C master clock frequency */
 
 extern QueueHandle_t oledQueue;
 extern SemaphoreHandle_t oledMutex;

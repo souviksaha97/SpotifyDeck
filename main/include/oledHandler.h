@@ -1,7 +1,6 @@
 #ifndef OLED_HANDLER_H
 #define OLED_HANDLER_H
 
-
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>

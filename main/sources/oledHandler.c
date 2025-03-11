@@ -124,7 +124,6 @@ void check_collision(void)
                     score = 0;
                     lives = 3;
 
-                                        // Game over screen
                     render_game_over();
                     vTaskDelay(pdMS_TO_TICKS(5000));
                 }
