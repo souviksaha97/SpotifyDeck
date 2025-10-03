@@ -1,7 +1,3 @@
-Absolutely! Here's a well-structured and engaging `README.md` for your **Asteroid Smash** game project on ESP32:
-
----
-
 # 🚀 Asteroid Smash
 
 **Asteroid Smash** is a real-time arcade-style game developed on the **ESP32** microcontroller to explore and learn **FreeRTOS**. The player pilots a spacecraft using an **IMU** (Inertial Measurement Unit), dodging and shooting incoming asteroids. The game features an **OLED display** for visuals and a **piezo buzzer** for sound effects, delivering a retro gaming experience on embedded hardware.
