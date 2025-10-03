@@ -108,6 +108,3 @@ This project helped me:
 
 MIT License. Feel free to fork, modify, and build upon it!
 
----
-
-Let me know if you'd like help writing the code documentation or adding visuals. This could be a great portfolio piece!
