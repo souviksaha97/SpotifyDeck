@@ -1,0 +1,54 @@
+dependencies:
+  espressif/led_strip:
+    component_hash: f907c58f722c58ab8545366668cfd8769cefb7d97a631a14e9d16234cc72bdff
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.0'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 3.0.0
+  espressif/mpu6050:
+    component_hash: d69219ccb141372b863c511749ffbeab28417ac71c205d7ed7030c308e1b6832
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.0'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.2.0
+  espressif/ssd1306:
+    component_hash: 102cfc05b1b304862fa3f494e9dd955844bcc5f6cb16596e4ca5df3e6bf9fd0d
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.0'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.0.5~1
+  hayschan/buzzer:
+    component_hash: ed8b35d8d2d662379010dd44624e3d0ac88ec9027a99f1091663dda821f3051d
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.4.0'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.0.0
+  idf:
+    source:
+      type: idf
+    version: 5.4.0
+direct_dependencies:
+- espressif/led_strip
+- espressif/mpu6050
+- espressif/ssd1306
+- hayschan/buzzer
+- idf
+manifest_hash: 9dfbf211488615c1280513c7bfc296029273a0bce2ed8c61d2e876d60f46a977
+target: esp32s3
+version: 2.0.0
